@@ -103,8 +103,6 @@ public class MergeActivity extends AppCompatActivity {
                 });
 
         //concatDelayError（）  /   mergeDelayError()   使用该操作符可以将error 事件推迟到其他被观察者发送事件结束后才触发
-        
-
 
 
     }
