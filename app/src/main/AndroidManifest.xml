@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MergeActivity">
+        <activity android:name=".FunctionActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -17,7 +17,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity" />
-        <activity android:name=".AlterActivity"></activity>
+        <activity android:name=".AlterActivity" />
+        <activity android:name=".MergeActivity"></activity>
     </application>
 
 </manifest>
