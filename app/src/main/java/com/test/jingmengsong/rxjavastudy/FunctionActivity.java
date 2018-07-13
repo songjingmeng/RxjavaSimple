@@ -13,11 +13,15 @@ import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BooleanSupplier;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 /**
  * 功能性 操作符
+ *
+ * 1、retryWhen 进行网络异常出错 重连机制
+ * 2、repeatWhen  进行网络请求轮询
  */
 public class FunctionActivity extends AppCompatActivity {
 
@@ -146,7 +150,7 @@ public class FunctionActivity extends AppCompatActivity {
         // onErrorResumeNext（） 遇到错误时，发送1个新的Observable
         //注 ：onErrorResumeNext（）拦截的错误 = Throwable；若需拦截Exception请用onExceptionResumeNext（）
         //    若onErrorResumeNext（）拦截的错误 = Exception，则会将错误传递给观察者的onError方法
-       Observable.create(new ObservableOnSubscribe<Integer>() {
+        Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
             public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
                 emitter.onNext(1);
@@ -157,10 +161,10 @@ public class FunctionActivity extends AppCompatActivity {
             @Override
             public ObservableSource<? extends Integer> apply(Throwable throwable) throws Exception {
                 // 1. 捕捉错误异常
-                Log.e(TAG, "在onErrorReturn处理了错误: "+throwable.toString() );
+                Log.e(TAG, "在onErrorReturn处理了错误: " + throwable.toString());
 
                 // 2. 发生错误事件后，发送一个新的被观察者 & 发送事件序列
-                return Observable.just(11,22);
+                return Observable.just(11, 22);
             }
         }).subscribe(new Observer<Integer>() {
             @Override
@@ -170,7 +174,7 @@ public class FunctionActivity extends AppCompatActivity {
 
             @Override
             public void onNext(Integer integer) {
-                Log.d(TAG, "onNext: onErrorResumeNext"+integer);
+                Log.d(TAG, "onNext: onErrorResumeNext" + integer);
             }
 
             @Override
@@ -186,11 +190,58 @@ public class FunctionActivity extends AppCompatActivity {
             }
         });
 
-       //onExceptionResumeNext()  效果同上
+        //onExceptionResumeNext()  效果同上
 
         //retry()  作用 重试 即当出现错误时， 让被观察者 重新发射数据
         //  1、接收到 onError（）时，重新订阅 & 发送事件
         //  2、Throwable 和 Exception都可拦截
 
+        //retryUtil()  出现错误后，判断是否需要重新发送数据
+
+        //retryWhen()  实现网络异常重连机制
+        //repeat（）
+        //repeatWhen（）实现网络请求轮询
+
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+
+                emitter.onNext(1);
+                emitter.onError(new Throwable("发生了错误"));
+                emitter.onNext(2);
+            }
+        }).retryUntil(new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() throws Exception {
+                return true;
+            }
+        }).subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.i(TAG, "onSubscribe: retryUntil");
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.i(TAG, "onNext: retryUntil" + integer);
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.i(TAG, "onError: retryUntil");
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.i(TAG, "onComplete: retryUntil");
+
+            }
+        });
+
+        // ----------------------- 线程控制调度 ---------------------------
+
+        // subscribeOn（） = 被观察者的工作线程（只有效一次）    observerOn（） = 观察者工作线程（无数次）
     }
 }
